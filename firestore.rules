@@ -1,0 +1,242 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profile and all subcollections
+    match /users/{userId} {
+      // Only the authenticated user can read/write their user document
+      allow read, write: if isUser(userId);
+      
+      // Social media posts subcollection
+      match /posts/{postId} {
+        allow read, write: if isUser(userId);
+      }
+
+      // Post queue subcollection
+      match /postQueue/{queueId} {
+        allow read, write: if isUser(userId);
+        // Additional validation for scheduled posts
+        allow create: if request.resource.data.hasAll(['content', 'platforms'])
+                     && request.resource.data.scheduledTime is timestamp
+                     && request.resource.data.scheduledTime > request.time;
+      }
+
+      // Analytics subcollection
+      match /analytics/{docId} {
+        allow read, write: if isUser(userId);
+      }
+
+      // Settings subcollection
+      match /settings/{docId} {
+        allow read, write: if isUser(userId);
+      }
+
+      // Business Insights subcollection (new)
+      match /businessInsights/{insightId} {
+        allow read, write: if isUser(userId);
+        // Validate the structure of insights data
+        allow create: if request.resource.data.keys().hasAll(['type', 'createdAt'])
+                     && request.resource.data.createdAt == request.time;
+      }
+
+      // Facebook tokens subcollection (new)
+      match /facebookTokens/{tokenId} {
+        allow read, write: if isUser(userId);
+        // Additional validation for token data
+        allow create: if request.resource.data.keys().hasAll(['token', 'expiresAt'])
+                     && request.resource.data.expiresAt > request.time;
+      }
+
+      // Avatar profile management
+      match /avatarSettings/{settingId} {
+        allow read: if isUser(userId);
+        allow write: if isUser(userId)
+                     && request.resource.data.keys().hasAll(['lastUpdated'])
+                     && request.resource.data.size() <= 10;
+      }
+
+      // Avatar customization history
+      match /avatarHistory/{historyId} {
+        allow read: if isUser(userId);
+        allow create: if isUser(userId)
+                     && request.resource.data.timestamp == request.time;
+        allow delete: if false;
+      }
+
+      // Profile privacy settings
+      match /privacySettings/{settingId} {
+        allow read: if isUser(userId);
+        allow write: if isUser(userId)
+                     && request.resource.data.keys().hasAll(['updatedAt'])
+                     && request.resource.data.size() <= 5;
+      }
+
+      // Profile traits and bio
+      match /profileData/{dataId} {
+        allow read: if isUser(userId) || 
+                    (resource.data.isPublic == true && resource.data.showProfile == true);
+        allow write: if isUser(userId)
+                     && request.resource.data.keys().hasAll(['updatedAt'])
+                     && request.resource.data.selectedTraits.size() <= 5;
+      }
+    }
+
+    // Public avatar templates (read-only for all authenticated users)
+    match /avatarTemplates/{templateId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Platform-wide analytics (aggregated data)
+    match /platformAnalytics/{docId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Business Insights shared data (new)
+    match /businessInsightsShared/{docId} {
+      // Users can share insights with specific users
+      allow read: if request.auth != null && 
+                   (resource.data.sharedWith.hasAny([request.auth.uid]) || 
+                    resource.data.ownerId == request.auth.uid);
+      allow write: if isUser(resource.data.ownerId);
+    }
+
+    // ===== TOKEN-BASED SUBSCRIPTION MODULE =====
+    match /subscriptions/{userId} {
+      allow read, write: if isUser(userId);
+    }
+    
+    match /paymentLogs/{logId} {
+      allow read, write: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+    
+    match /tokenUsage/{usageId} {
+      allow read, write: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
+    // ===== ENGAGEMENT TREND ANALYSIS MODULE =====
+    match /engagementMetrics/{metricId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    match /commentReplies/{replyId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    match /likes/{likeId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    match /comments/{commentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    match /shares/{shareId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ===== VOICE CLONING MODULE =====
+    match /voiceClones/{cloneId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    match /voiceSamples/{sampleId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ===== AVATAR CONTENT GENERATION MODULE =====
+    match /avatarContent/{contentId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    match /generatedContent/{contentId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ===== CAPTION GENERATOR MODULE =====
+    match /captions/{captionId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    match /hashtags/{hashtagId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ===== POST SCHEDULING MODULE =====
+    match /scheduledPosts/{postId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    match /postTemplates/{templateId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ===== AVATAR PROFILE MANAGER MODULE =====
+    match /avatarProfiles/{profileId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    match /avatarCustomizations/{customId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ===== SOCIAL MEDIA DASHBOARD MODULE =====
+    match /socialMediaPosts/{postId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    match /socialMediaAnalytics/{analyticsId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ===== BUSINESS INSIGHTS MODULE =====
+    match /businessReports/{reportId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    match /insightsData/{insightId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ===== PROFILE MANAGEMENT MODULE =====
+    match /userProfiles/{profileId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    match /profileSettings/{settingId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ===== SECURITY MODULE =====
+    match /securityLogs/{logId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    match /twoFactorSettings/{settingId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ===== SOCIAL AVATAR GENERATOR MODULE =====
+    match /socialAvatars/{avatarId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    match /avatarGenerations/{generationId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // Helper functions
+    function isUser(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Default deny-all rule
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

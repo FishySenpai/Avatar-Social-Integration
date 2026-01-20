@@ -1,0 +1,75 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle with Gradient -->
+  <defs>
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Main Circle Background -->
+  <circle cx="256" cy="256" r="240" fill="url(#mainGradient)" filter="url(#shadow)"/>
+  
+  <!-- Avatar Head -->
+  <circle cx="256" cy="200" r="70" fill="white" opacity="0.95"/>
+  
+  <!-- Avatar Body -->
+  <ellipse cx="256" cy="340" rx="100" ry="80" fill="white" opacity="0.95"/>
+  
+  <!-- AI Brain Symbol -->
+  <g transform="translate(200, 150)">
+    <!-- Circuit connections representing AI -->
+    <path d="M 40 20 L 60 20 L 60 40 L 80 40" stroke="url(#accentGradient)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M 72 20 L 92 20 L 92 40" stroke="url(#accentGradient)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M 40 60 L 60 60 L 60 80" stroke="url(#accentGradient)" stroke-width="4" fill="none" stroke-linecap="round"/>
+    
+    <!-- Neural nodes -->
+    <circle cx="40" cy="20" r="6" fill="url(#accentGradient)"/>
+    <circle cx="80" cy="40" r="6" fill="url(#accentGradient)"/>
+    <circle cx="92" cy="40" r="6" fill="url(#accentGradient)"/>
+    <circle cx="40" cy="60" r="6" fill="url(#accentGradient)"/>
+    <circle cx="60" cy="80" r="6" fill="url(#accentGradient)"/>
+  </g>
+  
+  <!-- Social Connection Dots -->
+  <g opacity="0.9">
+    <!-- Connection lines -->
+    <line x1="150" y1="380" x2="200" y2="360" stroke="white" stroke-width="3" opacity="0.6"/>
+    <line x1="362" y1="380" x2="312" y2="360" stroke="white" stroke-width="3" opacity="0.6"/>
+    <line x1="256" y1="420" x2="256" y2="380" stroke="white" stroke-width="3" opacity="0.6"/>
+    
+    <!-- Social dots -->
+    <circle cx="150" cy="380" r="12" fill="white"/>
+    <circle cx="256" cy="420" r="12" fill="white"/>
+    <circle cx="362" cy="380" r="12" fill="white"/>
+  </g>
+  
+  <!-- Avatar Eyes -->
+  <circle cx="236" cy="190" r="8" fill="url(#accentGradient)"/>
+  <circle cx="276" cy="190" r="8" fill="url(#accentGradient)"/>
+  
+  <!-- Smile -->
+  <path d="M 226 215 Q 256 230 286 215" stroke="url(#accentGradient)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Sparkle/Star accents for AI -->
+  <g fill="white" opacity="0.8">
+    <polygon points="380,140 385,150 395,155 385,160 380,170 375,160 365,155 375,150" />
+    <polygon points="140,250 143,256 149,259 143,262 140,268 137,262 131,259 137,256" />
+    <polygon points="120,160 124,168 132,172 124,176 120,184 116,176 108,172 116,168" />
+  </g>
+</svg>
